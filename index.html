@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Platform Seçimi & Form + Video</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #111;
+      color: #fff;
+    }
+    video#backgroundVideo {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: none; /* ilk başta gizli */
+    }
+    #container {
+      padding: 20px;
+    }
+    #platforms {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin-top: 40px;
+    }
+    .platform-box {
+      background: #88888888;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 70px;
+      height: 70px;
+    }
+    .platform-box:hover {
+      background: #555555cc;
+      box-shadow: 0 0 10px #00000088;
+    }
+    .platform-box.selected {
+      background: #4444aaee;
+      box-shadow: 0 0 15px #4444aaff;
+    }
+    .platform-logo {
+      max-width: 50px;
+      max-height: 50px;
+    }
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+    form {
+      max-width: 400px;
+      margin: 20px auto;
+      background: #222;
+      padding: 20px;
+      border-radius: 12px;
+    }
+    form label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    form input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    form button {
+      margin-top: 15px;
+      padding: 10px;
+      width: 100%;
+      font-size: 16px;
+      background: #4444aa;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #formTitle {
+      text-align: center;
+      font-size: 24px;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Video: sadece form sayfasında görünür -->
+<video id="backgroundVideo" autoplay loop playsinline controls>
+  <source src="fero.mp4" type="video/mp4" />
+  Tarayıcınız video etiketini desteklemiyor.
+</video>
+
+<div id="container">
+
+  <!-- Sayfa 1 -->
+  <div id="page1" class="page active">
+    <h1 style="text-align:center;">Bir platform seçin</h1>
+    <div id="platforms">
+      <div class="platform-box" data-platform="Instagram" tabindex="0">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" class="platform-logo" />
+      </div>
+      <div class="platform-box" data-platform="TikTok" tabindex="0">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0a/TikTok_logo.svg" alt="TikTok" class="platform-logo" />
+      </div>
+      <div class="platform-box" data-platform="YouTube" tabindex="0">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png" alt="YouTube" class="platform-logo" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Sayfa 2 -->
+  <div id="page2" class="page">
+    <div id="formTitle"></div>
+    <form id="accountForm">
+      <label for="accountName">Hesap Adı <span style="color:red;">*</span></label>
+      <input type="text" id="accountName" name="accountName" required />
+
+      <label for="fullName">İsim Soyisim (Opsiyonel)</label>
+      <input type="text" id="fullName" name="fullName" />
+
+      <label for="phoneNumber">Telefon Numarası <span style="color:red;">*</span></label>
+      <input type="tel" id="phoneNumber" name="phoneNumber" required pattern="[\d\s+()-]{7,}" placeholder="+90 5xx xxx xx xx" />
+
+      <button type="submit">Gönder</button>
+    </form>
+  </div>
+
+</div>
+
+<script>
+  const platformBoxes = document.querySelectorAll('.platform-box');
+  const page1 = document.getElementById('page1');
+  const page2 = document.getElementById('page2');
+  const formTitle = document.getElementById('formTitle');
+  const accountForm = document.getElementById('accountForm');
+  const video = document.getElementById('backgroundVideo');
+
+  let selectedPlatform = null;
+
+  platformBoxes.forEach(box => {
+    box.addEventListener('click', () => {
+      selectedPlatform = box.getAttribute('data-platform');
+
+      // Sayfa geçişi
+      page1.classList.remove('active');
+      page2.classList.add('active');
+
+      // Video göster ve sesi aç
+      video.style.display = "block";
+      video.muted = false;
+      video.volume = 1;
+      video.play();
+
+      // Başlık değiştir
+      formTitle.textContent = selectedPlatform + " hesabına el koy";
+    });
+  });
+
+  accountForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const data = {
+      platform: selectedPlatform,
+      accountName: accountForm.accountName.value.trim(),
+      fullName: accountForm.fullName.value.trim(),
+      phoneNumber: accountForm.phoneNumber.value.trim()
+    };
+
+    if (!data.accountName || !data.phoneNumber) {
+      alert("Lütfen zorunlu alanları doldurun!");
+      return;
+    }
+
+    console.log("Form verisi:", data);
+    alert("Hesap verileri gönderildi! 12-24 saat içinde şifre bildirilecektir.");
+
+    accountForm.reset();
+    video.pause();
+    video.currentTime = 0;
+    video.style.display = "none";
+
+    page2.classList.remove('active');
+    page1.classList.add('active');
+  });
+</script>
+
+</body>
+</html>
